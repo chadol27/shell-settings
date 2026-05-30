@@ -79,10 +79,10 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
   git
+  fzf-tab
   zsh-autosuggestions
   zsh-syntax-highlighting
   zsh-completions
-  fzf-tab
 )
 
 source $ZSH/oh-my-zsh.sh
