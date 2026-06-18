@@ -128,9 +128,33 @@ run-temp-docker() (
 # APT
 # =========================
 
-alias aud='sudo apt update'
-alias alu='sudo apt list --upgradeable'
-alias aug='sudo apt upgrade -y'
+_has_cmd() {
+  (( $+commands[$1] ))
+}
+
+aud() {
+  if _has_cmd nala; then
+    sudo nala update "$@"
+  else
+    sudo apt update "$@"
+  fi
+}
+
+alu() {
+  if _has_cmd nala; then
+    nala list --upgradable "$@"
+  else
+    apt list --upgradeable "$@"
+  fi
+}
+
+aug() {
+  if _has_cmd nala; then
+    sudo nala upgrade -y --no-update "$@"
+  else
+    sudo apt upgrade -y "$@"
+  fi
+}
 
 
 # =========================
