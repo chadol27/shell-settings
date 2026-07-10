@@ -46,26 +46,49 @@
   local cyan='#9AEDFE'
   local white='#F1F1F0'
 
-  # Left prompt segments.
-  typeset -g POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(
-    # =========================[ Line #1 ]=========================
-    dir                       # current directory
-    vcs                       # git status
-    virtualenv                # python virtual environment
-    command_execution_time    # previous command duration
-    # =========================[ Line #2 ]=========================
-    newline                   # \n
-    prompt_char               # prompt symbol
-  )
+  if [[ -n "$SSH_CONNECTION" ]]; then
+    # Left prompt segments.
+    typeset -g POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(
+      # =========================[ Line #1 ]=========================
+      context                   # user@host
+      dir                       # current directory
+      vcs                       # git status
+      virtualenv                # python virtual environment
+      command_execution_time    # previous command duration
+      # =========================[ Line #2 ]=========================
+      newline                   # \n
+      prompt_char               # prompt symbol
+    )
 
-  # Right prompt segments.
-  typeset -g POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(
-    # =========================[ Line #1 ]=========================
-    context                   # user@host
-    time                      # current time
-    # =========================[ Line #2 ]=========================
-    newline                   # \n
-  )
+    # Right prompt segments.
+    typeset -g POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(
+      # =========================[ Line #1 ]=========================
+      time                      # current time
+      # =========================[ Line #2 ]=========================
+      newline                   # \n
+    )
+  else
+    # Left prompt segments.
+    typeset -g POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(
+      # =========================[ Line #1 ]=========================
+      dir                       # current directory
+      vcs                       # git status
+      virtualenv                # python virtual environment
+      command_execution_time    # previous command duration
+      # =========================[ Line #2 ]=========================
+      newline                   # \n
+      prompt_char               # prompt symbol
+    )
+
+    # Right prompt segments.
+    typeset -g POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(
+      # =========================[ Line #1 ]=========================
+      context                   # user@host
+      time                      # current time
+      # =========================[ Line #2 ]=========================
+      newline                   # \n
+    )
+  fi
 
   # Basic style options that define the overall prompt look.
   typeset -g POWERLEVEL9K_BACKGROUND=                            # transparent background
