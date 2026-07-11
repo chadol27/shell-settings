@@ -35,6 +35,7 @@ fi
 # Custom Aliases/Functions
 # #########################
 
+alias update-shell-settings='pushd $HOME/shell-settings && git fetch && git status && popd'
 
 # System / Info
 
