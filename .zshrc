@@ -148,3 +148,8 @@ a() {
 }
 
 alias da='deactivate'
+
+
+# Shell settings update check
+source "$HOME/shell-settings/update.zsh"
+check_shell_settings_update </dev/null >/dev/tty 2>&1 &!
