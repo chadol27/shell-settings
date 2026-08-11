@@ -71,7 +71,7 @@ check-repo() {
       messages+=("Local branch is $ahead commit(s) ahead of $upstream")
     elif (( behind > 0 )); then
       if (( ${#messages[@]} == 0 )); then
-        if ! command git -C "$repo" pull; then
+        if ! command git -C "$repo" pull --ff-only; then
           print -u2 -- "[shell-settings] Failed to pull remote changes"
           return 2
         fi
