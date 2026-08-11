@@ -37,7 +37,7 @@ fi
 # #########################
 
 check-repo() {
-  local repo="${1:-$HOME/shell-settings}"
+  local repo="${1:-$HOME/.config/shell-settings}"
   local upstream counts ahead behind
   local -a messages
 
@@ -79,7 +79,7 @@ check-repo() {
 
 
 # Shell settings update check
-check-repo </dev/null >/dev/tty 2>&1 &!
+{ sleep 1; check-repo; } </dev/null >/dev/tty 2>&1 &!
 
 
 # #########################
