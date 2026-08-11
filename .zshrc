@@ -43,12 +43,12 @@ check-repo() {
 
   if [[ ! -d "$repo/.git" ]]; then
     print -u2 -- "[shell-settings] Git repository not found: $repo"
-    return 1
+    return 2
   fi
 
   if ! command git -C "$repo" fetch --quiet; then
     print -u2 -- "[shell-settings] Failed to fetch remote changes"
-    return 1
+    return 2
   fi
 
   if [[ -n "$(command git -C "$repo" status --porcelain)" ]]; then
@@ -59,7 +59,10 @@ check-repo() {
   if [[ -z "$upstream" ]]; then
     messages+=("No upstream is configured for the current branch")
   else
-    counts="$(command git -C "$repo" rev-list --left-right --count "HEAD...$upstream")" || return 1
+    if ! counts="$(command git -C "$repo" rev-list --left-right --count "HEAD...$upstream")"; then
+      print -u2 -- "[shell-settings] Failed to compare local and remote branches"
+      return 2
+    fi
     read -r ahead behind <<< "$counts"
 
     if (( ahead > 0 && behind > 0 )); then
@@ -67,6 +70,15 @@ check-repo() {
     elif (( ahead > 0 )); then
       messages+=("Local branch is $ahead commit(s) ahead of $upstream")
     elif (( behind > 0 )); then
+      if (( ${#messages[@]} == 0 )); then
+        if ! command git -C "$repo" pull; then
+          print -u2 -- "[shell-settings] Failed to pull remote changes"
+          return 2
+        fi
+        sleep 1
+        return 0
+      fi
+
       messages+=("Remote $upstream has $behind new commit(s)")
     fi
   fi
@@ -74,7 +86,10 @@ check-repo() {
   if (( ${#messages[@]} > 0 )); then
     print -- "[shell-settings] Updates require attention"
     printf '  - %s\n' "${messages[@]}"
+    return 1
   fi
+
+  return 0
 }
 
 
@@ -85,8 +100,6 @@ check-repo() {
 # #########################
 # Custom Aliases/Functions
 # #########################
-
-alias update-shell-settings='pushd $HOME/shell-settings && git fetch && git status && popd'
 
 # System / Info
 
@@ -199,3 +212,14 @@ a() {
 }
 
 alias da='deactivate'
+
+
+# opencode
+
+opencode() {
+  check-repo "$HOME/.config/opencode"
+  local repo_status=$?
+
+  (( repo_status == 0 )) || return "$repo_status"
+  command opencode "$@"
+}
