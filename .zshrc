@@ -97,6 +97,29 @@ check-repo() {
 { sleep 1; check-repo; } </dev/null >/dev/tty 2>&1 &!
 
 
+# omz plugins/themes update
+function omz-custom-update() {
+  local custom="${ZSH_CUSTOM:-$ZSH/custom}"
+  local dir
+  local failed=0
+
+  for dir in "$custom"/{plugins,themes}/*(N/); do
+    # Only update directories that are Git repository roots
+    [[ -e "$dir/.git" ]] || continue
+
+    echo "Updating ${dir:t}..."
+
+    if ! git -C "$dir" pull --ff-only; then
+      echo "Failed to update: $dir" >&2
+      failed=1
+    fi
+  done
+
+  (( failed )) && return 1
+  echo "All custom plugins and themes are up to date."
+}
+
+
 # #########################
 # Custom Aliases/Functions
 # #########################
