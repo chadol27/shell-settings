@@ -94,6 +94,31 @@ check-repo() {
   return 0
 }
 
+check-repo-and-run() {
+  if (( $# < 2 )); then
+    print -u2 -- "Usage: check-repo-and-run <repopath> <runcommand> [args...]"
+    return 2
+  fi
+
+  local repo="$1"
+  local runcommand="$2"
+  shift 2
+
+  check-repo "$repo"
+  local repo_status=$?
+
+  if (( repo_status == 1 )); then
+    local answer
+    read -q "answer?Updates require attention. Run '$runcommand' anyway? [y/N] "
+    print
+    [[ "$answer" == [yY] ]] || return 1
+  elif (( repo_status != 0 )); then
+    return "$repo_status"
+  fi
+
+  command "$runcommand" "$@"
+}
+
 
 # Shell settings update check
 { sleep 1; check-repo; } </dev/null >/dev/tty 2>&1 &!
@@ -241,10 +266,4 @@ alias da='deactivate'
 
 # opencode
 
-opencode() {
-  check-repo "$HOME/.config/opencode"
-  local repo_status=$?
-
-  (( repo_status == 0 )) || return "$repo_status"
-  command opencode "$@"
-}
+alias opencode='check-repo-and-run "$HOME/.config/opencode" opencode'
