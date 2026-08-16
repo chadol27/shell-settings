@@ -272,4 +272,5 @@ alias da='deactivate'
 
 # opencode
 
+export PATH=/home/chadol/.opencode/bin:$PATH
 alias opencode='check-repo-and-run "$HOME/.config/opencode" opencode'
