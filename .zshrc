@@ -185,7 +185,40 @@ alias ccc='clear'
 
 alias s='sudo -E'
 alias zr='source ~/.zshrc'
-alias help='run-help'
+
+help() {
+  if (( $# == 0 )); then
+    echo "usage: help <command>"
+    return 1
+  fi
+
+  local cmd="$1"
+
+  # Alias
+  if (( ${+aliases[$cmd]} )); then
+    echo "$cmd='${aliases[$cmd]}'"
+
+    local -a words
+    words=(${(z)aliases[$cmd]})
+
+    [[ -n "$words[1]" ]] && cmd="$words[1]"
+  fi
+
+  # Shell function
+  if [[ "$(whence -w "$cmd" 2>/dev/null)" == "$cmd: function" ]]; then
+    functions "$cmd"
+  fi
+
+  # Zsh help
+  if whence -w "$cmd" &>/dev/null; then
+    run-help "$cmd" 2>/dev/null
+  fi
+
+  # man page
+  if man -w "$cmd" &>/dev/null; then
+    man "$cmd"
+  fi
+}
 
 
 # Docker
