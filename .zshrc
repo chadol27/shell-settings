@@ -77,13 +77,20 @@ check-repo() {
       messages+=("Local branch is $ahead commit(s) ahead of $upstream")
     elif (( behind > 0 )); then
       if (( ${#messages[@]} == 0 )); then
-        print -- "[shell-settings] Pulling remote changes..."
-        if ! command git -C "$repo" pull --ff-only; then
-          print -u2 -- "[shell-settings] Failed to pull remote changes"
-          return 2
+        if [[ ! -t 0 ]]; then
+          print -- "[shell-settings] Remote $upstream has $behind new commit(s); run 'check-repo \"$repo\"' to update"
+          return 1
         fi
-        print -- "[shell-settings] Remote changes pulled successfully"
-        sleep 1
+
+        local answer
+        read -r "answer?Remote $upstream has $behind new commit(s). Pull changes? [Y/n] "
+        if [[ "$answer" != [nN] ]]; then
+          if ! command git -C "$repo" pull --ff-only; then
+            print -u2 -- "[shell-settings] Failed to pull remote changes; continuing without update"
+            return 2
+          fi
+          print -- "[shell-settings] Remote changes pulled successfully"
+        fi
         return 0
       fi
 
@@ -114,12 +121,16 @@ check-repo-and-run() {
   local repo_status=$?
 
   if (( repo_status == 1 )); then
-    local answer
-    read -q "answer?Updates require attention. Run '$runcommand' anyway? [y/N] "
-    print
-    [[ "$answer" == [yY] ]] || return 1
+    if [[ -t 0 ]]; then
+      local answer
+      read -q "answer?Updates require attention. Run '$runcommand' anyway? [y/N] "
+      print
+      [[ "$answer" == [yY] ]] || return 1
+    else
+      print -u2 -- "[shell-settings] Cannot prompt for confirmation; running '$runcommand' without updating"
+    fi
   elif (( repo_status != 0 )); then
-    return "$repo_status"
+    print -u2 -- "[shell-settings] Repository check failed; running '$runcommand' anyway"
   fi
 
   command "$runcommand" "$@"
