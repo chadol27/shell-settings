@@ -224,11 +224,6 @@ help() {
   if whence -w "$cmd" &>/dev/null; then
     run-help "$cmd" 2>/dev/null
   fi
-
-  # man page
-  if man -w "$cmd" &>/dev/null; then
-    man "$cmd"
-  fi
 }
 
 
