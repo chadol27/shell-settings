@@ -180,6 +180,12 @@ motd() {
   run-parts /etc/update-motd.d 
 }
 
+pfind() {
+  ps aux | awk -v q="$1" '
+    NR == 1 ||
+    (index(tolower($0), tolower(q)) && $11 !~ /awk/)
+  '
+}
 
 # Navigation / Listing
 
