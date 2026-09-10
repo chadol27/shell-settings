@@ -201,7 +201,7 @@ alias cc='clear'
 alias ccc='clear'
 
 alias s='sudo -E'
-alias zr='source ~/.zshrc'
+alias zr='exec zsh'
 
 help() {
   if (( $# == 0 )); then
