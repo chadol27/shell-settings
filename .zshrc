@@ -181,9 +181,38 @@ motd() {
 }
 
 pfind() {
+  [[ -z "$1" ]] && return 1
+
   ps aux | awk -v q="$1" '
-    NR == 1 ||
-    (index(tolower($0), tolower(q)) && $11 !~ /awk/)
+    BEGIN {
+      colored = "\033[1;31m"
+      reset   = "\033[0m"
+      lq = tolower(q)
+    }
+
+    function highlight(s,    lower, pos, out) {
+      lower = tolower(s)
+      out = ""
+
+      while ((pos = index(lower, lq)) > 0) {
+        out = out substr(s, 1, pos - 1) \
+              colored substr(s, pos, length(q)) reset
+
+        s = substr(s, pos + length(q))
+        lower = substr(lower, pos + length(q))
+      }
+
+      return out s
+    }
+
+    NR == 1 {
+      print
+      next
+    }
+
+    index(tolower($0), lq) && $11 !~ /awk/ {
+      print highlight($0)
+    }
   '
 }
 
