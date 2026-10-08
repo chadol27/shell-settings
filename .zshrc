@@ -348,3 +348,14 @@ alias da='deactivate'
 
 export PATH=/home/chadol/.opencode/bin:$PATH
 alias opencode='check-repo-and-run "$HOME/.config/opencode" opencode'
+
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+
+# sdkman
+
+if [[ -f "$HOME/.sdkman/bin/sdkman-init.sh" ]]; then
+    source "$HOME/.sdkman/bin/sdkman-init.sh"
+fi
