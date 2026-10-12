@@ -358,4 +358,6 @@ export SDKMAN_DIR="$HOME/.sdkman"
 
 # zoxide
 
-eval "$(zoxide init zsh)"
+if (( $+commands[zoxide] )); then
+  eval "$(zoxide init zsh)"
+fi
