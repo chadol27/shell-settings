@@ -52,8 +52,7 @@ check-repo() {
     return 2
   fi
 
-  if ! command git -C "$repo" fetch --quiet; then
-    print -u2 -- "[shell-settings] Failed to fetch remote changes"
+  if ! command git -C "$repo" fetch --quiet 2>/dev/null; then
     fetch_failed=1
   fi
 
