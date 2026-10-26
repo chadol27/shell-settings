@@ -44,7 +44,7 @@ fi
 
 check-repo() {
   local repo="${1:-$HOME/.config/shell-settings}"
-  local upstream counts ahead behind
+  local upstream counts ahead behind fetch_failed=0
   local -a messages
 
   if [[ ! -d "$repo/.git" ]]; then
@@ -54,47 +54,49 @@ check-repo() {
 
   if ! command git -C "$repo" fetch --quiet; then
     print -u2 -- "[shell-settings] Failed to fetch remote changes"
-    return 2
+    fetch_failed=1
   fi
 
   if [[ -n "$(command git -C "$repo" status --porcelain)" ]]; then
     messages+=("Uncommitted local changes found")
   fi
 
-  upstream="$(command git -C "$repo" rev-parse --abbrev-ref '@{upstream}' 2>/dev/null)"
-  if [[ -z "$upstream" ]]; then
-    messages+=("No upstream is configured for the current branch")
-  else
-    if ! counts="$(command git -C "$repo" rev-list --left-right --count "HEAD...$upstream")"; then
-      print -u2 -- "[shell-settings] Failed to compare local and remote branches"
-      return 2
-    fi
-    read -r ahead behind <<< "$counts"
-
-    if (( ahead > 0 && behind > 0 )); then
-      messages+=("Branch has diverged from $upstream (local +$ahead, remote +$behind)")
-    elif (( ahead > 0 )); then
-      messages+=("Local branch is $ahead commit(s) ahead of $upstream")
-    elif (( behind > 0 )); then
-      if (( ${#messages[@]} == 0 )); then
-        if [[ ! -t 0 ]]; then
-          print -- "[shell-settings] Remote $upstream has $behind new commit(s); run 'check-repo \"$repo\"' to update"
-          return 1
-        fi
-
-        local answer
-        read -r "answer?Remote $upstream has $behind new commit(s). Pull changes? [Y/n] "
-        if [[ "$answer" != [nN] ]]; then
-          if ! command git -C "$repo" pull --ff-only; then
-            print -u2 -- "[shell-settings] Failed to pull remote changes; continuing without update"
-            return 2
-          fi
-          print -- "[shell-settings] Remote changes pulled successfully"
-        fi
-        return 0
+  if (( ! fetch_failed )); then
+    upstream="$(command git -C "$repo" rev-parse --abbrev-ref '@{upstream}' 2>/dev/null)"
+    if [[ -z "$upstream" ]]; then
+      messages+=("No upstream is configured for the current branch")
+    else
+      if ! counts="$(command git -C "$repo" rev-list --left-right --count "HEAD...$upstream")"; then
+        print -u2 -- "[shell-settings] Failed to compare local and remote branches"
+        return 2
       fi
+      read -r ahead behind <<< "$counts"
 
-      messages+=("Remote $upstream has $behind new commit(s)")
+      if (( ahead > 0 && behind > 0 )); then
+        messages+=("Branch has diverged from $upstream (local +$ahead, remote +$behind)")
+      elif (( ahead > 0 )); then
+        messages+=("Local branch is $ahead commit(s) ahead of $upstream")
+      elif (( behind > 0 )); then
+        if (( ${#messages[@]} == 0 )); then
+          if [[ ! -t 0 ]]; then
+            print -- "[shell-settings] Remote $upstream has $behind new commit(s); run 'check-repo \"$repo\"' to update"
+            return 1
+          fi
+
+          local answer
+          read -r "answer?Remote $upstream has $behind new commit(s). Pull changes? [Y/n] "
+          if [[ "$answer" != [nN] ]]; then
+            if ! command git -C "$repo" pull --ff-only; then
+              print -u2 -- "[shell-settings] Failed to pull remote changes; continuing without update"
+              return 2
+            fi
+            print -- "[shell-settings] Remote changes pulled successfully"
+          fi
+          return 0
+        fi
+
+        messages+=("Remote $upstream has $behind new commit(s)")
+      fi
     fi
   fi
 
